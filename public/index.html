@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Packet Climb — send one message up the AI engineering stack and watch the same model fabricate or ground its answer depending on which layers are on.">
+  <title>Packet Climb — AI engineering is not “LLM + prompt”</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+<!-- pb-shell --><link rel="stylesheet" href="./pb-shell.css"><!-- pb-shell --><!-- pb-back --><link rel="stylesheet" href="./pb-back.css"><!-- pb-back --></head>
+<body>
+<a class="skip-link" href="#climb">Skip to the Packet Climb</a>
+<main>
+  <nav aria-label="Primary"><a aria-current="page" href="/">Lab</a><a href="/guide.html">Guide</a><a href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm">Source</a></nav>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Packet Climb · the Refund Desk dispatch board</p>
+      <h1>Same model.<br>Different system.</h1>
+      <p class="lede">Send a support message up the stack with nothing but a prompt and watch the model fabricate a Tuesday arrival and a $180 refund. Light the lanes — context, memory, tools, guardrails, observability — and the <em>same</em> model tells the truth.</p>
+    </div>
+    <p class="warning"><strong>Educational model.</strong> The “LLM” is a deterministic template drafter and the shop is simulated — nothing calls a real model, API, or database. The failure is real either way.</p>
+  </header>
+
+  <section class="panel controls" aria-labelledby="dispatch-title">
+    <div class="section-heading">
+      <div><p class="eyebrow">Dispatch configuration</p><h2 id="dispatch-title">Build the stack</h2></div>
+      <button id="run-scenario" type="button">Send through the stack</button>
+    </div>
+    <div class="toggle-row">
+      <fieldset>
+        <legend>Preset</legend>
+        <label><input type="radio" name="preset" value="none" checked> <span>LLM + prompt — every lane dark</span></label>
+        <label><input type="radio" name="preset" value="full"> <span>Full stack — all five lanes lit</span></label>
+      </fieldset>
+      <fieldset aria-label="Layers">
+        <legend>Lanes (toggle individually)</legend>
+        <div id="layer-toggles" class="layer-toggles"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Transmission</legend>
+        <label><input type="radio" name="scenario" value="status" checked> <span>“Where is my order #4821?”</span></label>
+        <label><input type="radio" name="scenario" value="forgot"> <span>Three turns later — “any update on it?”</span></label>
+        <label><input type="radio" name="scenario" value="refund"> <span>“Please refund me $180 for order #4821”</span></label>
+      </fieldset>
+    </div>
+    <p class="muted">The model never changes. Only the system around it does.</p>
+  </section>
+
+  <section class="workspace" aria-label="Packet Climb board">
+    <section class="panel" aria-labelledby="climb-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">The climb</p><h2 id="climb-title">One message, five lanes</h2></div>
+        <span id="stack-state" class="badge" role="status" aria-live="polite">—</span>
+      </div>
+      <div id="climb" class="climb" aria-label="Message packet climbing the layer stack">
+        <div class="model-box" id="model-box">
+          <span class="model-name">MODEL</span>
+          <span class="model-role">drafts the reply from whatever it’s shown</span>
+        </div>
+        <ol id="lanes" class="lanes" reversed></ol>
+        <div class="packet-source">
+          <span id="packet" class="packet" aria-hidden="true"></span>
+          <span class="packet-label">user message</span>
+        </div>
+      </div>
+      <p class="muted">Lit lane = a contribution stamped onto the packet. Dark lane = the model flies blind past it.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="reply-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Dispatch reply</p><h2 id="reply-title">What the customer hears</h2></div>
+        <span id="verdict-badge" class="badge" role="status" aria-live="polite">—</span>
+      </div>
+      <ol id="transcript" class="transcript" aria-label="Conversation transcript"></ol>
+      <p class="muted"><span class="claim-key grounded">■</span> backed by a record, pin, or call · <span class="claim-key fabricated">■</span> invented · <span class="claim-key blocked">■</span> intercepted by policy</p>
+    </section>
+  </section>
+
+  <section class="workspace workspace-bottom" aria-label="Evidence panels">
+    <section class="panel" aria-labelledby="tools-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Call log</p><h2 id="tools-title">What actually happened</h2></div>
+      </div>
+      <ol id="tool-log" class="tool-log" aria-label="Tool call log"></ol>
+      <p class="muted" id="tool-log-empty">No calls yet. “Done — $180 refunded” with an empty log is the failure this lab exists to expose.</p>
+    </section>
+    <section class="panel" aria-labelledby="trace-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Trace rail</p><h2 id="trace-title">What each lane did</h2></div>
+      </div>
+      <ol id="trace-rail" class="trace-rail" aria-label="Per-layer trace"></ol>
+      <p class="muted">The trace only exists when the observability lane is lit — which is the point.</p>
+    </section>
+  </section>
+
+  <section class="panel results-strip" aria-labelledby="results-title">
+    <div class="section-heading">
+      <div><p class="eyebrow">Full sweep</p><h2 id="results-title">All three transmissions</h2></div>
+      <button id="run-all" type="button">Run all three</button>
+    </div>
+    <ol id="scenario-results" class="scenario-results" aria-label="Scenario verdicts"></ol>
+  </section>
+
+  <p class="closing-links"><a href="/guide.html">Read the lane-by-lane guide</a><span class="sep" aria-hidden="true">·</span><a href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm">Inspect source and tests</a></p>
+</main>
+<script type="module" src="/app.js"></script>
+<!-- pb-shell --><a class="pb-shell" href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm" title="ai-engineering-is-not-llm — an Article Playbook demo (view source)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="2" fill="#2dd4bf"/><rect x="13" y="2" width="9" height="9" rx="2" fill="#2dd4bf" opacity=".45"/><rect x="2" y="13" width="9" height="9" rx="2" fill="#2dd4bf" opacity=".45"/><rect x="13" y="13" width="9" height="9" rx="4.5" fill="#2dd4bf"/></svg><b>ai-engineering-is-not-llm</b><i>DEMO</i></a><!-- pb-shell --><!-- pb-back --><a class="pb-back" id="pb-back" href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm" title="Back to the article — ai-engineering-is-not-llm">← Article <i>PLAYBOOK</i></a><script>(function(){var a=document.getElementById('pb-back');if(!a)return;var h=location.hostname;if(/^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(h)){a.href='//'+h+':'+(/^(localhost|127\.0\.0\.1)$/.test(h)?'1234':'30082')+'/microsites/article.html?slug=ai-engineering-is-not-llm';}})();</script><!-- pb-back --></body>
+</html>

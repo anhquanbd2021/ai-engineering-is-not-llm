@@ -1,0 +1,16 @@
+{
+  "name": "ai-engineering-is-not-llm-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ai Engineering Is Not Llm Lab — companion interactive demo",
+  "scripts": {
+    "start": "node app/server.js",
+    "lab": "node scripts/lab.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
+    "check": "npm test"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

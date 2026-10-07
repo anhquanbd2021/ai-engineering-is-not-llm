@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Guide to Packet Climb — what each lane of the AI engineering stack adds, and what goes wrong without it.">
+<title>Packet Climb Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<!-- pb-shell --><link rel="stylesheet" href="./pb-shell.css"><!-- pb-shell --><!-- pb-back --><link rel="stylesheet" href="./pb-back.css"><!-- pb-back --></head>
+<body>
+<a class="skip-link" href="#guide-start">Skip to the guide</a>
+<main>
+  <nav aria-label="Primary"><a href="/">Lab</a><a aria-current="page" href="/guide.html">Guide</a><a href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm">Source</a></nav>
+
+  <header class="guide-intro">
+    <p class="eyebrow">Lane-by-lane guide</p>
+    <h1>Five lanes, five failure modes</h1>
+    <p class="lede">The Packet Climb sends one support message up the stack around a deterministic model. This page maps every lane to the specific fabrication it prevents — and to what it still can't fix alone.</p>
+    <p class="warning"><strong>Honest limits.</strong> The model is a template drafter, retrieval scores keywords, and the shop is simulated. Real systems fail more creatively — which strengthens the point.</p>
+  </header>
+
+  <section class="panel" id="guide-start">
+    <p class="eyebrow">Start here</p>
+    <h2>What this demo proves</h2>
+    <p>Run the <em>LLM + prompt</em> preset: the model answers “Order #4821 ships tomorrow — arriving Tuesday” when the record says returned with a refund pending, re-asks the order number two turns after it was given, and says “Done — $180 refunded” with an empty call log. Then light the lanes and watch the <em>same</em> model tell the truth. The model gives fluency; the layers give correctness.</p>
+    <p><a class="try" href="/">Open the lab</a></p>
+  </section>
+
+  <section class="guide-section">
+    <p class="eyebrow">The lanes</p>
+    <h2>What each one stamps on the packet</h2>
+    <div class="control-grid">
+      <article class="panel control"><span class="control-number">Lane 01</span><h3>Data &amp; Context (RAG)</h3><p>Retrieval puts the real documents in the prompt — order <code>#4821</code> and the refund policy — so the model quotes the record instead of inventing one.</p><dl><dt>Proves</dt><dd>“arriving Tuesday” flips to “returned Oct 3, refund pending” the moment context is on.</dd><dt>Key detail</dt><dd>context is a budget — <code>retrieve()</code> returns the top 2 docs, not the whole table.</dd></dl></article>
+      <article class="panel control"><span class="control-number">Lane 02</span><h3>Memory</h3><p>Pins facts the user already gave — the order id, the pending refund — so turn 3’s “any update on it?” still knows what “it” is.</p><dl><dt>Proves</dt><dd>the re-ask of <code>#4821</code> becomes “the refund you told me about is still pending”.</dd><dt>Key detail</dt><dd>retrieval alone can’t fix this — with no referent, the search has nothing to find.</dd></dl></article>
+      <article class="panel control"><span class="control-number">Lane 03</span><h3>Tools &amp; APIs</h3><p><code>lookupOrder</code> and <code>issueRefund</code> perform actions for real, and every call lands in the log with arguments and a receipt.</p><dl><dt>Proves</dt><dd>“$180 refunded” becomes <code>issueRefund(#4821, $180) → R-4821-001</code> — checkable, not narrated.</dd><dt>Key detail</dt><dd>a tool does what it’s asked — $180 over a $100 cap is real but wrong; that’s a <em>partial</em>, not grounded.</dd></dl></article>
+      <article class="panel control"><span class="control-number">Lane 04</span><h3>Guardrails</h3><p>Policy as code: refunds cap at <code>$100</code>, delivery promises require tracking data, fabricated claims get intercepted and replaced with an honest refusal.</p><dl><dt>Proves</dt><dd>the $180 ask issues $100 with the cap stated; the Tuesday promise becomes “I can’t promise a date”.</dd><dt>Key detail</dt><dd>guardrails can block a fabrication but can’t ground one — enforcement and knowledge are different lanes.</dd></dl></article>
+      <article class="panel control"><span class="control-number">Lane 05</span><h3>Observability &amp; Evals</h3><p>Records the per-layer trace for every turn — which lane contributed, which stayed dark, which call ran.</p><dl><dt>Proves</dt><dd>you can’t tell a grounded answer from a hallucination by reading it; the trace is the difference.</dd><dt>Key detail</dt><dd>with the lane dark there is no trace — the reply leaves no evidence, which is itself the lesson.</dd></dl></article>
+    </div>
+  </section>
+
+  <section class="guide-section">
+    <p class="eyebrow">The transmissions</p>
+    <h2>Three scripted conversations</h2>
+    <div class="control-grid">
+      <article class="panel control"><span class="control-number">Scenario 01</span><h3>“Where is my order?”</h3><p>A single-turn status question. With nothing to ground it, the model invents a delivery date; with context or tools, it quotes the record.</p><dl><dt>Proves</dt><dd>fluency ≠ truth — the confident answer and the correct one read identically.</dd><dt>Key detail</dt><dd>the failure is <em>reproducible</em>: <code>layers: []</code> always yields “arriving Tuesday”.</dd></dl></article>
+      <article class="panel control"><span class="control-number">Scenario 02</span><h3>Three turns later</h3><p>The user gives <code>#4821</code> in turn 1, small-talks in turn 2, and asks “any update on it?” in turn 3.</p><dl><dt>Proves</dt><dd>without memory, turn 3 re-asks the order number — the conversation might as well have restarted.</dd><dt>Key detail</dt><dd>memory is what you keep, not what you dump — two pins fix the whole turn.</dd></dl></article>
+      <article class="panel control"><span class="control-number">Scenario 03</span><h3>The $180 ask</h3><p>An over-policy refund request. Tools make it real; guardrails make it safe; the log makes it auditable.</p><dl><dt>Proves</dt><dd>“Done” means a call in the log, not a confident sentence — the receipt is the evidence.</dd><dt>Key detail</dt><dd>tools without guardrails still issue $180 — real but over the cap, marked <em>partial</em>.</dd></dl></article>
+    </div>
+  </section>
+
+  <section class="guide-section">
+    <p class="eyebrow">Architecture</p>
+    <h2>How the demo is built</h2>
+    <div class="table-wrap panel" tabindex="0" role="region" aria-label="Architecture table — layer, behavior, evidence">
+      <table>
+        <thead><tr><th>Layer</th><th>Behavior</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td>Lab</td><td>Routes each message through whichever lanes are on; judges the verdict.</td><td><code>public/lab.mjs</code></td></tr>
+          <tr><td>Model</td><td>A deterministic template drafter — empty slots become confident fabrications.</td><td><code>public/model.mjs</code></td></tr>
+          <tr><td>Knowledge base</td><td>Two documents (order, policy) and keyword-scored retrieval.</td><td><code>public/kb.mjs</code></td></tr>
+          <tr><td>Tools</td><td><code>lookupOrder</code>, <code>issueRefund</code>, and the append-only call log.</td><td><code>public/tools.mjs</code></td></tr>
+          <tr><td>Server</td><td>Zero-dependency static host plus /health, /version, and POST /api/run.</td><td><code>app/server.js</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="guide-section">
+    <p class="eyebrow">Run locally</p>
+    <h2>Inspect the evidence</h2>
+    <pre class="code-block">npm test         # domain model + failure mode + server e2e
+npm run lab      # CLI: scenario × layer verdict table
+npm run check    # tests
+npm start        # serve the lab on :3000</pre>
+    <p>Try <code>node scripts/lab.mjs --full</code> for the annotated transcript, or <code>--layers=tools,guardrails</code> for a custom stack.</p>
+  </section>
+
+  <section class="guide-section panel">
+    <p class="eyebrow">Limits</p>
+    <h2>What this demo does not claim</h2>
+    <ul>
+      <li>The model is a template drafter, not an LLM — real fabrications are more creative.</li>
+      <li>Retrieval scores keywords; a real vector DB embeds and ranks.</li>
+      <li>Memory pins two fact shapes; production memory needs retention and privacy policy.</li>
+      <li>Guardrails intercept fabricated claims only — not adversarial inputs.</li>
+      <li>A grounded verdict means “backed by the system”, never “the system is correct”.</li>
+    </ul>
+    <p><a class="try" href="/">Return to Lab</a></p>
+  </section>
+</main>
+<!-- pb-shell --><a class="pb-shell" href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm" title="ai-engineering-is-not-llm — an Article Playbook demo (view source)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="2" fill="#2dd4bf"/><rect x="13" y="2" width="9" height="9" rx="2" fill="#2dd4bf" opacity=".45"/><rect x="2" y="13" width="9" height="9" rx="2" fill="#2dd4bf" opacity=".45"/><rect x="13" y="13" width="9" height="9" rx="4.5" fill="#2dd4bf"/></svg><b>ai-engineering-is-not-llm</b><i>DEMO</i></a><!-- pb-shell --><!-- pb-back --><a class="pb-back" id="pb-back" href="https://github.com/anhquanbd2021/ai-engineering-is-not-llm" title="Back to the article — ai-engineering-is-not-llm">← Article <i>PLAYBOOK</i></a><script>(function(){var a=document.getElementById('pb-back');if(!a)return;var h=location.hostname;if(/^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(h)){a.href='//'+h+':'+(/^(localhost|127\.0\.0\.1)$/.test(h)?'1234':'30082')+'/microsites/article.html?slug=ai-engineering-is-not-llm';}})();</script><!-- pb-back --></body>
+</html>
